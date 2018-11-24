@@ -46,3 +46,15 @@ fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>
 
     return Triple(maxScore, maxScoreKey, maxScoreAsciiString)
 }
+
+fun hammingDistance(bytesOne: ByteArray, bytesTwo: ByteArray): Int {
+    val oneBinary = bytesOne.toBinary()
+    val twoBinary = bytesTwo.toBinary()
+
+    var hammingDistance = 0
+    oneBinary.zip(twoBinary).forEach { (bitOne, bitTwo) ->
+        if (bitOne != bitTwo) hammingDistance++
+    }
+
+    return hammingDistance
+}

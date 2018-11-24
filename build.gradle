@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41"
     compile "com.google.guava:guava:27.0-jre"
 }
 
