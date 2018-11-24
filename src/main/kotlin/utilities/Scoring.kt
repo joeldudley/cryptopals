@@ -2,32 +2,47 @@ package utilities
 
 import java.io.File
 
-fun scoreAsciiUsingNgrams(asciiString: String, ngramSize: Int, trigramFrequencyMap: Map<String, Int>): Int {
-    var score = 0
+fun scoreAsciiUsingNgrams(asciiString: String, ngramFrequencyMap: Map<String, Int>): Int {
+    val ngramSize = ngramFrequencyMap.keys.iterator().next().length
 
     val upperBound = asciiString.length - ngramSize
 
-    for (i in 0..upperBound) {
-        val ngram = asciiString.substring(i, i + ngramSize)
-        score += trigramFrequencyMap.getOrDefault(ngram, 0)
-    }
+    val asciiSubstrings = (0..upperBound).map { asciiString.substring(it, it + ngramSize) }
 
-    return score
+    return asciiSubstrings.sumBy { ngramFrequencyMap.getOrDefault(it, 0) }
 }
 
-fun ngramFrequencyGenerator(filepath: String, ngram_size: Int): Map<String, Int> {
+fun ngramFrequencyGenerator(filepath: String, ngramSize: Int): Map<String, Int> {
     val ngramFrequencyDict = mutableMapOf<String, Int>()
 
-    val file = File(filepath)
-    file.inputStream().use { inputStream ->
-        // We chomp three bytes of text at a time (i.e. bytes[0..3], then bytes[3..6], etc.).
-        // An alternative would be to move through the bytes one-by-one (i.e. bytes[0..3], then bytes[1..4], etc.).
-        val bytes = ByteArray(ngram_size)
-        while (inputStream.read(bytes) != -1) {
-            val ascii = bytes.toAscii()
+    File(filepath).bufferedReader().use { inputStream ->
+        // We chomp three chars of text at a time (i.e. chars[0..3], then chars[3..6], etc.).
+        // An alternative would be to move through the chars one-by-one (i.e. chars[0..3], then chars[1..4], etc.).
+        val chars = CharArray(ngramSize)
+        while (inputStream.read(chars) != -1) {
+            val ascii = String(chars)
             ngramFrequencyDict[ascii] = ngramFrequencyDict.getOrDefault(ascii, 0) + 1
         }
     }
 
     return ngramFrequencyDict
+}
+
+fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>, ngramFrequencyMap: Map<String, Int>): Triple<Int, Byte, String> {
+    var maxScore = 0
+    var maxScoreKey: Byte = 0
+
+    possibleKeys.forEach { possibleKey ->
+        val xoredBytes = (bytes xor possibleKey)
+        val xoredAsciiString = xoredBytes.toAscii()
+        val score = scoreAsciiUsingNgrams(xoredAsciiString, ngramFrequencyMap)
+        if (score > maxScore) {
+            maxScore = score
+            maxScoreKey = possibleKey
+        }
+    }
+
+    val maxScoreAsciiString = (bytes xor maxScoreKey).toAscii()
+
+    return Triple(maxScore, maxScoreKey, maxScoreAsciiString)
 }

@@ -1,5 +1,6 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.41'
+    id 'idea'
 }
 
 group 'a'
@@ -11,8 +12,14 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "com.google.guava:guava:27.0-jre"
+}
 
-    compile group: 'com.google.guava', name: 'guava', version: '27.0-jre'
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
 
 compileKotlin {
