@@ -1,6 +1,7 @@
 package cryptopals.setone
 
 import cryptopals.Challenge
+import utilities.encryptWithRepeatingKeyXor
 import utilities.toHex
 import kotlin.experimental.xor
 
@@ -13,12 +14,7 @@ object ChallengeFive: Challenge(1, 5) {
         val keyBytes = providedKey.toByteArray()
         val asciiStringBytes = providedAsciiString.toByteArray()
 
-        val encryptedBytes = ByteArray(expectedHexString.length / 2)
-        asciiStringBytes.forEachIndexed { idx, asciiStringByte ->
-            val keyByte = keyBytes[idx % keyBytes.size]
-            encryptedBytes[idx] = keyByte xor asciiStringByte
-        }
-
+        val encryptedBytes = encryptWithRepeatingKeyXor(asciiStringBytes, keyBytes)
         val encryptedHexString = encryptedBytes.toHex()
 
         return (encryptedHexString == expectedHexString)
