@@ -53,8 +53,8 @@ object ChallengeSix : Challenge(1, 6) {
             maxScoreKey
         }.toByteArray()
 
-        val decryptedText = encryptWithRepeatingKeyXor(encryptedBytes, keys).toAscii()
+        val decryptedAscii = encryptWithRepeatingKeyXor(encryptedBytes, keys).toAscii()
 
-        return decryptedText == expectedAsciiString
+        return decryptedAscii == expectedAsciiString
     }
 }

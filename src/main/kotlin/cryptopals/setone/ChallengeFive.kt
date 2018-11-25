@@ -3,7 +3,6 @@ package cryptopals.setone
 import cryptopals.Challenge
 import utilities.encryptWithRepeatingKeyXor
 import utilities.toHex
-import kotlin.experimental.xor
 
 object ChallengeFive: Challenge(1, 5) {
     override fun passes(): Boolean {

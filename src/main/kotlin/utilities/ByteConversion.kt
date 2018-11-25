@@ -13,8 +13,8 @@ fun ByteArray.toHex(): String = BaseEncoding.base16().lowerCase().encode(this)
 
 fun ByteArray.toAscii() = String(this, UTF_8)
 
-fun ByteArray.toBinary() = map { byte ->
+fun ByteArray.toBinary() = joinToString("") { byte ->
     val int = byte.toInt()
     val binaryString = Integer.toBinaryString(int)
     binaryString.padStart(8, '0')
-}.joinToString("")
+}
