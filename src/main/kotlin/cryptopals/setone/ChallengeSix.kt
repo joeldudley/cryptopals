@@ -58,7 +58,3 @@ object ChallengeSix : Challenge(1, 6) {
         return decryptedText == expectedAsciiString
     }
 }
-
-fun main(args: Array<String>) {
-    ChallengeSix.run()
-}

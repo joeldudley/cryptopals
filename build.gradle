@@ -1,17 +1,33 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.41'
-}
-
 group 'a'
 version '1.0-SNAPSHOT'
 
+buildscript {
+    ext {
+        kotlin_version = '1.2.41'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 repositories {
+    mavenLocal()
     mavenCentral()
 }
+
+apply plugin: 'kotlin'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41"
     compile "com.google.guava:guava:27.0-jre"
+    compile "org.bouncycastle:bcprov-jdk15on:1.60"
+
 }
 
 compileKotlin {
