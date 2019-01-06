@@ -7,6 +7,23 @@ import java.io.File
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
+/*
+The Base64-encoded content in this file has been encrypted via AES-128 in ECB mode under the key
+
+    "YELLOW SUBMARINE".
+
+(case-sensitive, without the quotes; exactly 16 characters; I like "YELLOW SUBMARINE" because it's exactly 16 bytes
+long, and now you do too).
+
+Decrypt it. You know the key, after all.
+
+Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
+
+Do this with code.
+
+You can obviously decrypt this using the OpenSSL command-line tool, but we're having you get ECB working in code for a
+reason. You'll need it a lot later on, and not just for attacking ECB.
+*/
 object ChallengeSeven : Challenge(1, 7) {
     override fun passes(): Boolean {
         val providedEncryptedBase64String = File("src/main/resources/challengedata/7.txt").readText().filter { it != '\n' }

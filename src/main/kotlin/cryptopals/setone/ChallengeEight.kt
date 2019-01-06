@@ -8,6 +8,16 @@ import java.io.File
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
+/*
+In this file are a bunch of hex-encoded ciphertexts.
+
+One of them has been encrypted with ECB.
+
+Detect it.
+
+Remember that the problem with ECB is that it is stateless and deterministic; the same 16 byte plaintext block will
+always produce the same 16 byte ciphertext.
+*/
 object ChallengeEight : Challenge(1, 8) {
     override fun passes(): Boolean {
         val providedHexStrings = File("src/main/resources/challengedata/8.txt").readLines()

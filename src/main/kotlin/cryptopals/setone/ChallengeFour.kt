@@ -6,6 +6,13 @@ import utilities.likeliestSingleCharXorUsingNgrams
 import utilities.ngramFrequencyGenerator
 import java.io.File
 
+/*
+One of the 60-character strings in this file has been encrypted by single-character XOR.
+
+Find it.
+
+(Your code from #3 should help.)
+*/
 object ChallengeFour: Challenge(1, 4) {
     override fun passes(): Boolean {
         val providedHexStrings = File("src/main/resources/challengedata/4.txt").readLines()
