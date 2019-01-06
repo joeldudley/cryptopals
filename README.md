@@ -1,4 +1,4 @@
-My solutions to the Cryptopals Crypto Challenges.
+My solutions to the Cryptopals Crypto Challenges (http://cryptopals.com/).
 
 # Running the challenges
 
