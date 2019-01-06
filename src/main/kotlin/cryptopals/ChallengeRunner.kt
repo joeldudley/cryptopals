@@ -10,7 +10,8 @@ fun main(args: Array<String>) {
             ChallengeFour,
             ChallengeFive,
             ChallengeSix,
-            ChallengeSeven)
+            ChallengeSeven,
+            ChallengeEight)
 
     challenges.forEach { challenge ->
         challenge.run()
