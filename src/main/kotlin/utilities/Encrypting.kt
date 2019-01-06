@@ -11,25 +11,30 @@ fun encryptWithRepeatingKeyXor(bytes: ByteArray, key: ByteArray): ByteArray {
     return encryptedBytes
 }
 
-fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxPossibleKeySize: Int): Int {
-    var keySize = 0
-    var maxNormalisedHammingDistance = Double.MAX_VALUE
-    val blocksToCheck = bytes.size / maxPossibleKeySize
-    (2..maxPossibleKeySize).forEach { size ->
+/**
+ * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [bytes] using repeating-key XOR. The
+ * likeliest key is the one for which the average Hamming distance between successive blocks is the smallest.
+ */
+fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxKeySize: Int): Int {
+    var repeatingXorKeySize = 0
+    var minAverageHammingDistance = Double.MAX_VALUE
+    // The number of blocks we can use to calculate the average Hamming distance.
+    val totalBlocks = bytes.size / maxKeySize
 
-        val totalHammingDistance = (0 until blocksToCheck).sumBy { idx ->
-            val chunkOne = bytes.slice(idx * size..(idx + 1) * size).toByteArray()
-            val chunkTwo = bytes.slice((idx + 1) * size..(idx + 2) * size).toByteArray()
+    (2..maxKeySize).forEach { size ->
+        val totalHammingDistance = (0 until totalBlocks - 1).sumBy { blockIdx ->
+            val chunkOne = bytes.slice(blockIdx * size..(blockIdx + 1) * size).toByteArray()
+            val chunkTwo = bytes.slice((blockIdx + 1) * size..(blockIdx + 2) * size).toByteArray()
             hammingDistance(chunkOne, chunkTwo)
         }
 
-        val normalisedHammingDistance = totalHammingDistance/1.0/size
+        val averageHammingDistance = totalHammingDistance/1.0/size
 
-        if (normalisedHammingDistance < maxNormalisedHammingDistance) {
-            keySize = size
-            maxNormalisedHammingDistance = normalisedHammingDistance
+        if (averageHammingDistance < minAverageHammingDistance) {
+            repeatingXorKeySize = size
+            minAverageHammingDistance = averageHammingDistance
         }
     }
 
-    return keySize
+    return repeatingXorKeySize
 }
