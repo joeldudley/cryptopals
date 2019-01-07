@@ -42,16 +42,6 @@ fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxKeySize: Int): Int {
 }
 
 /**
- * Decrypt the [ciphertext] encrypted with AES in ECB mode with [key].
- */
-fun decryptWithAESInECBMode(ciphertext: ByteArray, key: ByteArray): ByteArray {
-    val secretKeySpec = SecretKeySpec(key, "AES")
-    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
-    cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)
-    return cipher.doFinal(ciphertext)
-}
-
-/**
  * Encrypt the [plaintext] with AES in ECB mode with [key].
  */
 fun encryptWithAESInECBMode(plaintext: ByteArray, key: ByteArray): ByteArray {
@@ -62,12 +52,26 @@ fun encryptWithAESInECBMode(plaintext: ByteArray, key: ByteArray): ByteArray {
 }
 
 /**
+ * Decrypt the [ciphertext] with AES in ECB mode with [key].
+ */
+fun decryptWithAESInECBMode(ciphertext: ByteArray, key: ByteArray): ByteArray {
+    val secretKeySpec = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
+    cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)
+    return cipher.doFinal(ciphertext)
+}
+
+/**
  * Encrypt the [plaintext] with AES in CBC mode with [key].
  */
 fun encryptWithAESInCBCMode(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
     // TODO: Check that padding with null bytes is correct.
-    val paddingLength = key.size - (plaintext.size % key.size)
-    val paddedPlaintext = plaintext.pad(paddingLength, 0.toByte())
+    val paddedPlaintext = if (plaintext.size % key.size == 0) {
+        plaintext
+    } else {
+        val paddingLength = key.size - (plaintext.size % key.size)
+        plaintext.pad(paddingLength, 0.toByte())
+    }
 
     val plaintextBlocks = paddedPlaintext.toList().chunked(key.size).map { it.toByteArray() }
     // TODO: Is it efficient enough to keep creating and copying a new array?
@@ -84,10 +88,36 @@ fun encryptWithAESInCBCMode(plaintext: ByteArray, key: ByteArray, iv: ByteArray)
     return ciphertext
 }
 
+/**
+ * Decrypt the [ciphertext] with AES in CBC mode with [key].
+ */
+fun decryptWithAESInCBCMode(ciphertext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+    val ciphertextBlocks = ciphertext.toList().chunked(key.size).map { it.toByteArray() }
+    // TODO: Is it efficient enough to keep creating and copying a new array?
+    var plaintext = ByteArray(0)
+    var ivOrPrecedingCiphertextBlock = iv
+
+    ciphertextBlocks.forEach { ciphertextBlock ->
+        val output = decryptWithAESInECBMode(ciphertextBlock, key)
+        val plaintextBlock = output.xor(ivOrPrecedingCiphertextBlock)
+        ivOrPrecedingCiphertextBlock = ciphertextBlock
+        plaintext += plaintextBlock
+    }
+
+    // TODO: Should decryption also strip the padding?
+
+    return plaintext
+}
+
 fun main(args: Array<String>) {
-    val plaintext = "JOELJOELJOELJOELboelboelboelbo".toByteArray()
+    val plaintext = "JOELJOELJOELJOELboelboelboelboe".toByteArray()
     val iv = ByteArray(16) { 0.toByte() }
     val key = "YELLOW SUBMARINE".toByteArray()
 
-    println(encryptWithAESInCBCMode(plaintext, key, iv).toHex())
+    val encryption = encryptWithAESInCBCMode(plaintext, key, iv)
+    val decryption = decryptWithAESInCBCMode(encryption, key, iv)
+
+    println(plaintext.toHex())
+    println(encryption.toHex())
+    println(decryption.toHex())
 }
