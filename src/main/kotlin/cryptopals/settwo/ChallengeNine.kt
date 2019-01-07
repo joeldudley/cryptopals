@@ -2,6 +2,7 @@ package cryptopals.settwo
 
 import cryptopals.Challenge
 import utilities.hexToBytes
+import utilities.pad
 import utilities.toBase64
 import utilities.toHex
 
@@ -25,7 +26,7 @@ object ChallengeNine: Challenge(2, 9) {
     override fun passes(): Boolean {
         val providedString = "YELLOW SUBMARINE"
         val paddedLength = 20
-        val expectedBytes = "YELLOW SUBMARINE".toByteArray() + ByteArray(4) { 4.toByte() }
+        val expectedBytes = "YELLOW SUBMARINE".toByteArray().pad(4, 4.toByte())
 
         val paddingLength = paddedLength - providedString.length
         val padding = ByteArray(paddingLength) { paddingLength.toByte() }

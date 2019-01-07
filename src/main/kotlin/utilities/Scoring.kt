@@ -2,16 +2,6 @@ package utilities
 
 import java.io.File
 
-fun scoreAsciiUsingNgrams(asciiString: String, ngramFrequencyMap: Map<String, Int>): Int {
-    val ngramSize = ngramFrequencyMap.keys.iterator().next().length
-
-    val upperBound = asciiString.length - ngramSize
-
-    val asciiSubstrings = (0..upperBound).map { asciiString.substring(it, it + ngramSize) }
-
-    return asciiSubstrings.sumBy { ngramFrequencyMap.getOrDefault(it, 0) }
-}
-
 fun ngramFrequencyGenerator(filepath: String, ngramSize: Int): Map<String, Int> {
     val ngramFrequencyDict = mutableMapOf<String, Int>()
 
@@ -26,6 +16,16 @@ fun ngramFrequencyGenerator(filepath: String, ngramSize: Int): Map<String, Int> 
     }
 
     return ngramFrequencyDict
+}
+
+fun scoreAsciiUsingNgrams(asciiString: String, ngramFrequencyMap: Map<String, Int>): Int {
+    val ngramSize = ngramFrequencyMap.keys.iterator().next().length
+
+    val upperBound = asciiString.length - ngramSize
+
+    val asciiSubstrings = (0..upperBound).map { asciiString.substring(it, it + ngramSize) }
+
+    return asciiSubstrings.sumBy { ngramFrequencyMap.getOrDefault(it, 0) }
 }
 
 fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>, ngramFrequencyMap: Map<String, Int>): Triple<Int, Byte, String> {

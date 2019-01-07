@@ -2,6 +2,7 @@ package cryptopals.setone
 
 import cryptopals.Challenge
 import utilities.base64ToBytes
+import utilities.decryptWithAESInECBMode
 import utilities.toAscii
 import java.io.File
 import javax.crypto.Cipher
@@ -63,11 +64,8 @@ object ChallengeSeven : Challenge(1, 7) {
         val encryptedBytes = providedEncryptedBase64String.base64ToBytes()
         val keyBytes = providedKey.toByteArray()
 
-        val secretKeySpec = SecretKeySpec(keyBytes, "AES")
-        val cipher = Cipher.getInstance("AES/ECB/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)
-
-        val decryptedAscii = cipher.doFinal(encryptedBytes).toAscii()
+        val decryptedBytes = decryptWithAESInECBMode(encryptedBytes, keyBytes)
+        val decryptedAscii = decryptedBytes.toAscii()
 
         return decryptedAscii == expectedAsciiString
     }

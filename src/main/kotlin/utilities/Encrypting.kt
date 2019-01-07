@@ -1,5 +1,7 @@
 package utilities
 
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
 
 fun encryptWithRepeatingKeyXor(bytes: ByteArray, key: ByteArray): ByteArray {
@@ -13,7 +15,7 @@ fun encryptWithRepeatingKeyXor(bytes: ByteArray, key: ByteArray): ByteArray {
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [bytes] using repeating-key XOR. The
- * likeliest key is the one for which the average Hamming distance between successive blocks is the smallest.
+ * likeliest key size is the one for which the average Hamming distance between successive blocks is the smallest.
  */
 fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxKeySize: Int): Int {
     var repeatingXorKeySize = 0
@@ -37,4 +39,55 @@ fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxKeySize: Int): Int {
     }
 
     return repeatingXorKeySize
+}
+
+/**
+ * Decrypt the [ciphertext] encrypted with AES in ECB mode with [key].
+ */
+fun decryptWithAESInECBMode(ciphertext: ByteArray, key: ByteArray): ByteArray {
+    val secretKeySpec = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
+    cipher.init(Cipher.DECRYPT_MODE, secretKeySpec)
+    return cipher.doFinal(ciphertext)
+}
+
+/**
+ * Encrypt the [plaintext] with AES in ECB mode with [key].
+ */
+fun encryptWithAESInECBMode(plaintext: ByteArray, key: ByteArray): ByteArray {
+    val secretKeySpec = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
+    cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec)
+    return cipher.doFinal(plaintext)
+}
+
+/**
+ * Encrypt the [plaintext] with AES in CBC mode with [key].
+ */
+fun encryptWithAESInCBCMode(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+    // TODO: Check that padding with null bytes is correct.
+    val paddingLength = key.size - (plaintext.size % key.size)
+    val paddedPlaintext = plaintext.pad(paddingLength, 0.toByte())
+
+    val plaintextBlocks = paddedPlaintext.toList().chunked(key.size).map { it.toByteArray() }
+    // TODO: Is it efficient enough to keep creating and copying a new array?
+    var ciphertext = ByteArray(0)
+    var ivOrPrecedingCiphertextBlock = iv
+
+    plaintextBlocks.forEach { plaintextBlock ->
+        val input = plaintextBlock.xor(ivOrPrecedingCiphertextBlock)
+        val ciphertextBlock = encryptWithAESInECBMode(input, key)
+        ivOrPrecedingCiphertextBlock = ciphertextBlock
+        ciphertext += ciphertextBlock
+    }
+
+    return ciphertext
+}
+
+fun main(args: Array<String>) {
+    val plaintext = "JOELJOELJOELJOELboelboelboelbo".toByteArray()
+    val iv = ByteArray(16) { 0.toByte() }
+    val key = "YELLOW SUBMARINE".toByteArray()
+
+    println(encryptWithAESInCBCMode(plaintext, key, iv).toHex())
 }
