@@ -133,3 +133,15 @@ fun encryptWithAESInCBCOrECBWithRandomKeyAndPadding(plaintext: ByteArray): ByteA
         encryptWithAESInECBMode(paddedPlaintext, randomKey)
     }
 }
+
+/**
+ * Encrypt the [plaintext] with AES in either ECB or CBC mode with a random key and random padding.
+ */
+fun encryptWithAESInECBModeWithFixedKeyAndTrailingBytes(plaintext: ByteArray): ByteArray {
+    val key = "854e5e8a9e9ef3a8cc1e".hexToBytes()
+    val trailingBytes = ("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lyb" +
+            "GllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
+            .base64ToBytes()
+    val randomIv = Random.nextBytes(16)
+    return encryptWithAESInCBCMode(plaintext + trailingBytes, key, randomIv)
+}
