@@ -32,19 +32,19 @@ object ChallengeEight : Challenge(1, 8) {
         var ecbEncryptedCiphertextBytes = ByteArray(0)
         var maxRepeatingCiphertexts = 0
         ciphertextsAsBytes.forEach { bytes ->
-            var repeatingCiphertexts = 0
+            var repeatingBlocks = 0
             // TODO: Using a set isn't very efficient due to the way byte array equality works. Working around it for
             // TODO: now using toString().
-            val dict = mutableSetOf<String>()
+            val seenBlocks = mutableSetOf<String>()
 
             (0 until totalBlocks).forEach { blockIdx ->
                 val block = bytes.slice((blockIdx * ecbBlockSize) until (blockIdx + 1) * ecbBlockSize).toString()
-                if (block in dict) repeatingCiphertexts += 1
-                else dict.add(block)
+                if (block in seenBlocks) repeatingBlocks += 1
+                else seenBlocks.add(block)
             }
 
-            if (repeatingCiphertexts > maxRepeatingCiphertexts) {
-                maxRepeatingCiphertexts = repeatingCiphertexts
+            if (repeatingBlocks > maxRepeatingCiphertexts) {
+                maxRepeatingCiphertexts = repeatingBlocks
                 ecbEncryptedCiphertextBytes = bytes
             }
         }

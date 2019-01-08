@@ -110,6 +110,7 @@ fun decryptWithAESInCBCMode(ciphertext: ByteArray, key: ByteArray, iv: ByteArray
 }
 
 fun main(args: Array<String>) {
+    // TODO: Remove this and check CBC works in the context of the 10th challenge.
     val plaintext = "JOELJOELJOELJOELboelboelboelboe".toByteArray()
     val iv = ByteArray(16) { 0.toByte() }
     val key = "YELLOW SUBMARINE".toByteArray()

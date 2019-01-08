@@ -28,8 +28,8 @@ reason. You'll need it a lot later on, and not just for attacking ECB.
 object ChallengeSeven : Challenge(1, 7) {
     override fun passes(): Boolean {
         val providedEncryptedBase64String = File("src/main/resources/challengedata/7.txt").readText().filter { it != '\n' }
-        val providedKey = "YELLOW SUBMARINE"
-        val expectedAsciiString = "I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
+        val providedKey = "YELLOW SUBMARINE".toByteArray()
+        val expectedPlaintext = "I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
                 "yell \nIn ecstasy in the back of me \nWell that's my DJ Deshay cuttin' all them Z's \nHittin' hard " +
                 "and the girlies goin' crazy \nVanilla's on the mike, man I'm not lazy. \n\nI'm lettin' my drug " +
                 "kick in \nIt controls my mouth and I begin \nTo just let it flow, let my concepts go \nMy posse's " +
@@ -62,11 +62,10 @@ object ChallengeSeven : Challenge(1, 7) {
                 "funky music, white boy Come on, Come on, Come on \nPlay that funky music \n\u0004\u0004\u0004\u0004"
 
         val encryptedBytes = providedEncryptedBase64String.base64ToBytes()
-        val keyBytes = providedKey.toByteArray()
 
-        val decryptedBytes = decryptWithAESInECBMode(encryptedBytes, keyBytes)
+        val decryptedBytes = decryptWithAESInECBMode(encryptedBytes, providedKey)
         val decryptedAscii = decryptedBytes.toAscii()
 
-        return decryptedAscii == expectedAsciiString
+        return decryptedAscii == expectedPlaintext
     }
 }
