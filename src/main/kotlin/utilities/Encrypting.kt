@@ -3,6 +3,7 @@ package utilities
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
+import kotlin.random.Random
 
 fun encryptWithRepeatingKeyXor(bytes: ByteArray, key: ByteArray): ByteArray {
     val encryptedBytes = ByteArray(bytes.size)
@@ -45,10 +46,12 @@ fun findRepeatingKeyXorKeySize(bytes: ByteArray, maxKeySize: Int): Int {
  * Encrypt the [plaintext] with AES in ECB mode with [key].
  */
 fun encryptWithAESInECBMode(plaintext: ByteArray, key: ByteArray): ByteArray {
+    val paddedPlaintext = plaintext.padToMultipleOf(key.size)
+
     val secretKeySpec = SecretKeySpec(key, "AES")
     val cipher = Cipher.getInstance("AES/ECB/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec)
-    return cipher.doFinal(plaintext)
+    return cipher.doFinal(paddedPlaintext)
 }
 
 /**
@@ -73,7 +76,7 @@ fun encryptWithAESInCBCMode(plaintext: ByteArray, key: ByteArray, iv: ByteArray)
         plaintext.pad(paddingLength, 0.toByte())
     }
 
-    val plaintextBlocks = paddedPlaintext.toList().chunked(key.size).map { it.toByteArray() }
+    val plaintextBlocks = paddedPlaintext.chunk(key.size)
     // TODO: Is it efficient enough to keep creating and copying a new array?
     var ciphertext = ByteArray(0)
     var ivOrPrecedingCiphertextBlock = iv
@@ -92,7 +95,7 @@ fun encryptWithAESInCBCMode(plaintext: ByteArray, key: ByteArray, iv: ByteArray)
  * Decrypt the [ciphertext] with AES in CBC mode with [key].
  */
 fun decryptWithAESInCBCMode(ciphertext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-    val ciphertextBlocks = ciphertext.toList().chunked(key.size).map { it.toByteArray() }
+    val ciphertextBlocks = ciphertext.chunk(key.size)
     // TODO: Is it efficient enough to keep creating and copying a new array?
     var plaintext = ByteArray(0)
     var ivOrPrecedingCiphertextBlock = iv
@@ -109,16 +112,24 @@ fun decryptWithAESInCBCMode(ciphertext: ByteArray, key: ByteArray, iv: ByteArray
     return plaintext
 }
 
-fun main(args: Array<String>) {
-    // TODO: Remove this and check CBC works in the context of the 10th challenge.
-    val plaintext = "JOELJOELJOELJOELboelboelboelboe".toByteArray()
-    val iv = ByteArray(16) { 0.toByte() }
-    val key = "YELLOW SUBMARINE".toByteArray()
+/**
+ * Encrypt the [plaintext] with AES in either ECB or CBC mode with a random key and random padding.
+ */
+fun encryptWithAESInCBCOrECBWithRandomKeyAndPadding(plaintext: ByteArray): ByteArray {
+    val leadingRandomBytesLength = Random.nextInt(5, 11)
+    val trailingRandomBytesLength = Random.nextInt(5, 11)
+    val leadingRandomBytes = Random.nextBytes(leadingRandomBytesLength)
+    val trailingRandomBytes = Random.nextBytes(trailingRandomBytesLength)
 
-    val encryption = encryptWithAESInCBCMode(plaintext, key, iv)
-    val decryption = decryptWithAESInCBCMode(encryption, key, iv)
+    val paddedPlaintext = leadingRandomBytes + plaintext + trailingRandomBytes
 
-    println(plaintext.toHex())
-    println(encryption.toHex())
-    println(decryption.toHex())
+    val randomKey = Random.nextBytes(16)
+    val useCBC = Random.nextBoolean()
+
+    return if (useCBC) {
+        val randomIv = Random.nextBytes(16)
+        encryptWithAESInCBCMode(paddedPlaintext, randomKey, randomIv)
+    } else {
+        encryptWithAESInECBMode(paddedPlaintext, randomKey)
+    }
 }

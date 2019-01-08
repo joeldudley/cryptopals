@@ -11,3 +11,10 @@ fun transpose(byteArray: ByteArray, rowSize: Int): List<ByteArray> {
         row.toByteArray()
     }
 }
+
+/**
+ * Breaks the ByteArray into chunks of size [chunkSize].
+ */
+fun ByteArray.chunk(chunkSize: Int): List<ByteArray> {
+    return toList().chunked(chunkSize).map { it.toByteArray() }
+}
