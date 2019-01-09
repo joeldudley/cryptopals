@@ -9,8 +9,6 @@ fun String.base64ToBytes(): ByteArray = BaseEncoding.base64().decode(this)
 
 fun ByteArray.toBase64(): String = BaseEncoding.base64().encode(this)
 
-fun ByteArray.toHex(): String = BaseEncoding.base16().lowerCase().encode(this)
-
 fun ByteArray.toAscii() = String(this, UTF_8)
 
 fun ByteArray.toBinary() = joinToString("") { byte ->

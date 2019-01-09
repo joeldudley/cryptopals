@@ -1,10 +1,7 @@
-package cryptopals.settwo
+package challenges.settwo
 
-import cryptopals.Challenge
-import utilities.hexToBytes
+import challenges.Challenge
 import utilities.pad
-import utilities.toBase64
-import utilities.toHex
 
 /*
 A block cipher transforms a fixed-sized block (usually 8 or 16 bytes) of plaintext into ciphertext. But we almost never
@@ -24,13 +21,12 @@ instance,
 */
 object ChallengeNine: Challenge(2, 9) {
     override fun passes(): Boolean {
-        val providedString = "YELLOW SUBMARINE"
+        val providedPlaintext = "YELLOW SUBMARINE".toByteArray()
         val paddedLength = 20
         val expectedBytes = "YELLOW SUBMARINE".toByteArray().pad(4, 4.toByte())
 
-        val paddingLength = paddedLength - providedString.length
-        val padding = ByteArray(paddingLength) { paddingLength.toByte() }
-        val paddedBytes = providedString.toByteArray() + padding
+        val paddingLength = paddedLength - providedPlaintext.size
+        val paddedBytes = providedPlaintext.pad(paddingLength, paddingLength.toByte())
 
         return paddedBytes.contentEquals(expectedBytes)
     }

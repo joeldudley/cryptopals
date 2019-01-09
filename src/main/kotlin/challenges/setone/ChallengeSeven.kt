@@ -1,12 +1,9 @@
-package cryptopals.setone
+package challenges.setone
 
-import cryptopals.Challenge
+import challenges.Challenge
+import ciphers.AesEcbCipher
 import utilities.base64ToBytes
-import utilities.decryptWithAESInECBMode
-import utilities.toAscii
 import java.io.File
-import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
 
 /*
 The Base64-encoded content in this file has been encrypted via AES-128 in ECB mode under the key
@@ -27,9 +24,9 @@ reason. You'll need it a lot later on, and not just for attacking ECB.
 */
 object ChallengeSeven : Challenge(1, 7) {
     override fun passes(): Boolean {
-        val providedEncryptedBase64String = File("src/main/resources/challengedata/7.txt").readText().filter { it != '\n' }
+        val providedCiphertext = File("src/main/resources/challengedata/7.txt").readText().filter { it != '\n' }.base64ToBytes()
         val providedKey = "YELLOW SUBMARINE".toByteArray()
-        val expectedPlaintext = "I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
+        val expectedPlaintext = ("I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
                 "yell \nIn ecstasy in the back of me \nWell that's my DJ Deshay cuttin' all them Z's \nHittin' hard " +
                 "and the girlies goin' crazy \nVanilla's on the mike, man I'm not lazy. \n\nI'm lettin' my drug " +
                 "kick in \nIt controls my mouth and I begin \nTo just let it flow, let my concepts go \nMy posse's " +
@@ -59,13 +56,12 @@ object ChallengeSeven : Challenge(1, 7) {
                 "go \nplay that funky music Go white boy, go white boy, go \nLay down and boogie and play that " +
                 "funky music till you die. \n\nPlay that funky music Come on, Come on, let me hear \nPlay that " +
                 "funky music white boy you say it, say it \nPlay that funky music A little louder now \nPlay that " +
-                "funky music, white boy Come on, Come on, Come on \nPlay that funky music \n\u0004\u0004\u0004\u0004"
+                "funky music, white boy Come on, Come on, Come on \nPlay that funky music \n\u0004\u0004\u0004\u0004").toByteArray()
 
-        val encryptedBytes = providedEncryptedBase64String.base64ToBytes()
+        val cipher = AesEcbCipher()
+        cipher.key = providedKey
+        val plaintext = cipher.decrypt(providedCiphertext)
 
-        val decryptedBytes = decryptWithAESInECBMode(encryptedBytes, providedKey)
-        val decryptedAscii = decryptedBytes.toAscii()
-
-        return decryptedAscii == expectedPlaintext
+        return plaintext.contentEquals(expectedPlaintext)
     }
 }

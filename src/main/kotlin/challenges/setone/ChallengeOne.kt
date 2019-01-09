@@ -1,6 +1,6 @@
-package cryptopals.setone
+package challenges.setone
 
-import cryptopals.Challenge
+import challenges.Challenge
 import utilities.hexToBytes
 import utilities.toBase64
 

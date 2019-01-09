@@ -1,9 +1,8 @@
-package cryptopals.settwo
+package challenges.settwo
 
-import cryptopals.Challenge
-import utilities.chunk
-import utilities.encryptWithAESInCBCOrECBWithRandomKeyAndPadding
-import utilities.toHex
+import challenges.Challenge
+import ciphers.AesEcbCipher
+import utilities.determineCipherBlockSize
 
 /*
 Copy your oracle function to a new function that encrypts buffers under ECB mode using a consistent but unknown key
@@ -58,6 +57,12 @@ object ChallengeTwelve : Challenge(2, 12) {
     override fun passes(): Boolean {
         // Use the encryptWithAESInECBModeWithFixedKeyAndTrailingBytes method we've defined.
 
+        println(determineCipherBlockSize(AesEcbCipher()))
+
         return true
     }
+}
+
+fun main(args: Array<String>) {
+    ChallengeTwelve.run()
 }

@@ -1,8 +1,8 @@
-package cryptopals.setone
+package challenges.setone
 
-import cryptopals.Challenge
-import utilities.encryptWithRepeatingKeyXor
-import utilities.toHex
+import challenges.Challenge
+import ciphers.RepeatingKeyXorCipher
+import utilities.hexToBytes
 
 /*
 Here is the opening stanza of an important work of the English language:
@@ -25,16 +25,14 @@ Encrypt a bunch of stuff using your repeating-key XOR function. Encrypt your mai
 */
 object ChallengeFive: Challenge(1, 5) {
     override fun passes(): Boolean {
-        val providedAsciiString = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
-        val providedKey = "ICE"
-        val expectedHexString = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
+        val providedPlaintext = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".toByteArray()
+        val providedKey = "ICE".toByteArray()
+        val expectedCiphertext = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f".hexToBytes()
 
-        val keyBytes = providedKey.toByteArray()
-        val asciiStringBytes = providedAsciiString.toByteArray()
+        val cipher = RepeatingKeyXorCipher()
+        cipher.key = providedKey
+        val ciphertext = cipher.encrypt(providedPlaintext)
 
-        val encryptedBytes = encryptWithRepeatingKeyXor(asciiStringBytes, keyBytes)
-        val encryptedHexString = encryptedBytes.toHex()
-
-        return (encryptedHexString == expectedHexString)
+        return (ciphertext.contentEquals(expectedCiphertext))
     }
 }

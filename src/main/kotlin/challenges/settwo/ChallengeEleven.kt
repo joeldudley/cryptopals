@@ -1,9 +1,8 @@
-package cryptopals.settwo
+package challenges.settwo
 
-import cryptopals.Challenge
+import challenges.Challenge
 import utilities.chunk
-import utilities.encryptWithAESInCBCOrECBWithRandomKeyAndPadding
-import utilities.toHex
+import utilities.encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding
 
 /*
 Now that you have ECB and CBC working:
@@ -30,12 +29,12 @@ block box that might be encrypting ECB or CBC, tells you which one is happening.
 object ChallengeEleven : Challenge(2, 11) {
     override fun passes(): Boolean {
         val plaintext = ByteArray(320) { 0.toByte() }
-        val ciphertext = encryptWithAESInCBCOrECBWithRandomKeyAndPadding(plaintext)
+        val ciphertext = encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding(plaintext)
 
         val ciphertextBlocks = ciphertext.chunk(16)
         // We skip over the block containing the IV.
-        if (ciphertextBlocks[1].toHex() == ciphertextBlocks[2].toHex()
-                && ciphertextBlocks[2].toHex() == ciphertextBlocks[3].toHex()) {
+        if (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
+                && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3])) {
             // Is using ECB mode, since identical plaintext blocks have the same ciphertext.
         } else {
             // Is using CBC mode, since identical plaintext blocks don't have the same ciphertext.

@@ -1,8 +1,8 @@
-My solutions to the Cryptopals Crypto Challenges (http://cryptopals.com/).
+My solutions to the Cryptopals Crypto Challenges (http://challenges.com/).
 
 # Running the challenges
 
-Run `cryptopals.ChallengeRunner` to run each challenge and check it passes.
+Run `challenges.ChallengeRunner` to run each challenge and check it passes.
 
 # Current progress
 

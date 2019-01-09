@@ -1,64 +1,37 @@
-package cryptopals.setone
+package challenges.settwo
 
-import cryptopals.Challenge
+import challenges.Challenge
+import ciphers.AesCbcCipher
 import utilities.*
 import java.io.File
 
 /*
-It is officially on, now.
+CBC mode is a block cipher mode that allows us to encrypt irregularly-sized messages, despite the fact that a block
+cipher natively only transforms individual blocks.
 
-This challenge isn't conceptually hard, but it involves actual error-prone coding. The other challenges in this set are there to bring you up to speed. This one is there to qualify you. If you can do this one, you're probably just fine up to Set 6.
+In CBC mode, each ciphertext block is added to the next plaintext block before the next call to the cipher core.
 
-There's a file here. It's been base64'd after being encrypted with repeating-key XOR.
+The first plaintext block, which has no associated previous ciphertext block, is added to a "fake 0th ciphertext block"
+called the initialization vector, or IV.
 
-Decrypt it.
+Implement CBC mode by hand by taking the ECB function you wrote earlier, making it encrypt instead of decrypt (verify
+this by decrypting whatever you encrypt to test), and using your XOR function from the previous exercise to combine
+them.
 
-Here's how:
+The file here is intelligible (somewhat) when CBC decrypted against "YELLOW SUBMARINE" with an IV of all ASCII 0
+(\x00\x00\x00 &c)
 
-1. Let KEYSIZE be the guessed length of the key; try values from 2 to (say) 40.
+Don't cheat.
 
-2. Write a function to compute the edit distance/Hamming distance between two strings. The Hamming distance is just the
-number of differing bits. The distance between:
-
-    this is a test
-
-and
-
-    wokka wokka!!!
-
-is 37. Make sure your code agrees before you proceed.
-
-3. For each KEYSIZE, take the first KEYSIZE worth of bytes, and the second KEYSIZE worth of bytes, and find the edit
-distance between them. Normalize this result by dividing by KEYSIZE.
-
-4. The KEYSIZE with the smallest normalized edit distance is probably the key. You could proceed perhaps with the
-smallest 2-3 KEYSIZE values. Or take 4 KEYSIZE blocks instead of 2 and average the distances.
-
-5. Now that you probably know the KEYSIZE: break the ciphertext into blocks of KEYSIZE length.
-
-6. Now transpose the blocks: make a block that is the first byte of every block, and a block that is the second byte of
-every block, and so on.
-
-7. Solve each block as if it was single-character XOR. You already have code to do this.
-
-8. For each block, the single-byte XOR key that produces the best looking histogram is the repeating-key XOR key byte
-for that block. Put them together and you have the key.
-
-This code is going to turn out to be surprisingly useful later on. Breaking repeating-key XOR ("Vigenere")
-statistically is obviously an academic exercise, a "Crypto 101" thing. But more people "know how" to break it than can
-actually break it, and a similar technique breaks something much more important.
-
-No, that's not a mistake.
-
-We get more tech support questions for this challenge than any of the other ones. We promise, there aren't any blatant
-errors in this text. In particular: the "wokka wokka!!!" edit distance really is 37.
+Do not use OpenSSL's CBC code to do CBC mode, even to verify your results. What's the point of even doing this stuff if
+you aren't going to learn from it?
 */
-object ChallengeSix : Challenge(1, 6) {
+object ChallengeTen: Challenge(2, 10) {
     override fun passes(): Boolean {
-        val providedEncryptedBase64String = File("src/main/resources/challengedata/6.txt").readText().filter { it != '\n' }
-        val providedMaxPossibleKeySize = 40
-        val encryptedBytes = providedEncryptedBase64String.base64ToBytes()
-        val expectedAsciiString = "I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
+        val providedCiphertext = File("src/main/resources/challengedata/10.txt").readText().filter { it != '\n' }.base64ToBytes()
+        val providedKey = "YELLOW SUBMARINE".toByteArray()
+        val providedIv = ByteArray(16) { "0".toByte() }
+        val expectedPlaintext = ("I'm back and I'm ringin' the bell \nA rockin' on the mike while the fly girls " +
                 "yell \nIn ecstasy in the back of me \nWell that's my DJ Deshay cuttin' all them Z's \nHittin' hard " +
                 "and the girlies goin' crazy \nVanilla's on the mike, man I'm not lazy. \n\nI'm lettin' my drug " +
                 "kick in \nIt controls my mouth and I begin \nTo just let it flow, let my concepts go \nMy posse's " +
@@ -88,22 +61,13 @@ object ChallengeSix : Challenge(1, 6) {
                 "go \nplay that funky music Go white boy, go white boy, go \nLay down and boogie and play that " +
                 "funky music till you die. \n\nPlay that funky music Come on, Come on, let me hear \nPlay that " +
                 "funky music white boy you say it, say it \nPlay that funky music A little louder now \nPlay that " +
-                "funky music, white boy Come on, Come on, Come on \nPlay that funky music \n"
+                "funky music, white boy Come on, Come on, Come on \nPlay that funky music \n\u0004\u0004\u0004\u0004").toByteArray()
 
-        val keySize = findRepeatingKeyXorKeySize(encryptedBytes, providedMaxPossibleKeySize)
+        val cipher = AesCbcCipher()
+        cipher.key = providedKey
+        cipher.iv = providedIv
+        val plaintext = cipher.decrypt(providedCiphertext)
 
-        val blocks = transpose(encryptedBytes, keySize)
-
-        val trigramFrequencyMap = ngramFrequencyGenerator("src/main/resources/t8.shakespeare.txt", 1)
-        val possibleKeys = (0..255).map { it.toByte() }
-
-        val keys = blocks.map { block ->
-            val (_, maxScoreKey, _) = likeliestSingleCharXorUsingNgrams(block, possibleKeys, trigramFrequencyMap)
-            maxScoreKey
-        }.toByteArray()
-
-        val decryptedAscii = encryptWithRepeatingKeyXor(encryptedBytes, keys).toAscii()
-
-        return decryptedAscii == expectedAsciiString
+        return plaintext.contentEquals(expectedPlaintext)
     }
 }

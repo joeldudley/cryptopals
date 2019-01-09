@@ -28,7 +28,7 @@ fun scoreAsciiUsingNgrams(asciiString: String, ngramFrequencyMap: Map<String, In
     return asciiSubstrings.sumBy { ngramFrequencyMap.getOrDefault(it, 0) }
 }
 
-fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>, ngramFrequencyMap: Map<String, Int>): Triple<Int, Byte, String> {
+fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>, ngramFrequencyMap: Map<String, Int>): Triple<Int, Byte, ByteArray> {
     var maxScore = 0
     var maxScoreKey: Byte = 0
 
@@ -42,9 +42,9 @@ fun likeliestSingleCharXorUsingNgrams(bytes: ByteArray, possibleKeys: List<Byte>
         }
     }
 
-    val maxScoreAsciiString = (bytes xor maxScoreKey).toAscii()
+    val maxScoreBytes = (bytes xor maxScoreKey)
 
-    return Triple(maxScore, maxScoreKey, maxScoreAsciiString)
+    return Triple(maxScore, maxScoreKey, maxScoreBytes)
 }
 
 fun hammingDistance(bytesOne: ByteArray, bytesTwo: ByteArray): Int {

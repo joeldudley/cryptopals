@@ -1,9 +1,9 @@
-package cryptopals
+package challenges
 
-import cryptopals.setone.*
-import cryptopals.settwo.ChallengeEleven
-import cryptopals.settwo.ChallengeNine
-import cryptopals.settwo.ChallengeTen
+import challenges.setone.*
+import challenges.settwo.ChallengeEleven
+import challenges.settwo.ChallengeNine
+import challenges.settwo.ChallengeTen
 
 fun main(args: Array<String>) {
     val challenges = listOf(
