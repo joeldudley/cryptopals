@@ -50,11 +50,14 @@ fun determineCipherBlockSize(cipher: Cipher): Int {
 }
 
 /**
- * Determine whether a cipher is operating in ECB or CBC mode.
+ * Determine whether the [cipher] is operating in ECB or CBC mode.
  */
-// TODO: Needs to change. Cipher should be passed in so we can enforce all-the-same plaintext.
-// TODO: Means encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding must become a cipher.
-fun usesEcbMode(ciphertext: ByteArray, blockSize: Int): Boolean {
+// TODO: Can we do this without providing the blocksize?
+fun usesEcbMode(cipher: Cipher, blockSize: Int): Boolean {
+    // Every plaintext block is the same, meaning that every ciphertext block will be the same too if we're using ECB
+    // mode.
+    val plaintext = ByteArray(320) { 0.toByte() }
+    val ciphertext = cipher.encrypt(plaintext)
     val ciphertextBlocks = ciphertext.chunk(blockSize)
 
     // We skip over the block potentially containing the IV.

@@ -28,19 +28,18 @@ block box that might be encrypting ECB or CBC, tells you which one is happening.
 */
 object ChallengeEleven : Challenge(2, 11) {
     override fun passes(): Boolean {
-        val plaintext = ByteArray(320) { 0.toByte() }
         val cipher = RandomModeRandomKeyRandomPaddingCipher()
 
-        val wereValidPredictions = (0..10).map {
-            val ciphertext = cipher.encrypt(plaintext)
-
-            if (usesEcbMode(ciphertext, 16)) {
-                cipher.lastModeUsedIsEcb
-            } else {
-                !cipher.lastModeUsedIsEcb
-            }
+        repeat(10) {
+            val predictedToUseEcb = usesEcbMode(cipher, 16)
+            val actuallyUsedEcb = cipher.lastModeUsedIsEcb
+            if (predictedToUseEcb != actuallyUsedEcb) return false
         }
 
-        return wereValidPredictions.all { it }
+        return true
     }
+}
+
+fun main(args: Array<String>) {
+    ChallengeEleven.run()
 }
