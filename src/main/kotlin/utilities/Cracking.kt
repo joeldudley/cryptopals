@@ -52,7 +52,13 @@ fun determineCipherBlockSize(cipher: Cipher): Int {
 /**
  * Determine whether a cipher is operating in ECB or CBC mode.
  */
-fun determineCipherMode(ciphertext: ByteArray): Int {
-    // TODO: Generalise code from challenge 11.
-    return 0
+// TODO: Needs to change. Cipher should be passed in so we can enforce all-the-same plaintext.
+// TODO: Means encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding must become a cipher.
+fun usesEcbMode(ciphertext: ByteArray, blockSize: Int): Boolean {
+    val ciphertextBlocks = ciphertext.chunk(blockSize)
+
+    // We skip over the block potentially containing the IV.
+    // We can detect ECB mode by the repeating blocks for the same plaintext.
+    return (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
+            && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3]))
 }

@@ -2,6 +2,7 @@ package challenges.settwo
 
 import challenges.Challenge
 import ciphers.AesEcbCipher
+import ciphers.toyciphers.ECBUnknownKeyUnknownTrailingBytesCipher
 import utilities.determineCipherBlockSize
 
 /*
@@ -55,7 +56,7 @@ tests about once a year.
 */
 object ChallengeTwelve : Challenge(2, 12) {
     override fun passes(): Boolean {
-        // Use the encryptWithAESInECBModeWithFixedKeyAndTrailingBytes method we've defined.
+        val cipher = ECBUnknownKeyUnknownTrailingBytesCipher()
 
         println(determineCipherBlockSize(AesEcbCipher()))
 

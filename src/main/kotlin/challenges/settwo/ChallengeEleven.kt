@@ -1,8 +1,8 @@
 package challenges.settwo
 
 import challenges.Challenge
-import utilities.chunk
-import utilities.encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding
+import ciphers.toyciphers.RandomModeRandomKeyRandomPaddingCipher
+import utilities.usesEcbMode
 
 /*
 Now that you have ECB and CBC working:
@@ -29,17 +29,18 @@ block box that might be encrypting ECB or CBC, tells you which one is happening.
 object ChallengeEleven : Challenge(2, 11) {
     override fun passes(): Boolean {
         val plaintext = ByteArray(320) { 0.toByte() }
-        val ciphertext = encryptWithAESInCBCOrECBWithRandomKeyAndRandomPadding(plaintext)
+        val cipher = RandomModeRandomKeyRandomPaddingCipher()
 
-        val ciphertextBlocks = ciphertext.chunk(16)
-        // We skip over the block containing the IV.
-        if (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
-                && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3])) {
-            // Is using ECB mode, since identical plaintext blocks have the same ciphertext.
-        } else {
-            // Is using CBC mode, since identical plaintext blocks don't have the same ciphertext.
+        val wereValidPredictions = (0..10).map {
+            val ciphertext = cipher.encrypt(plaintext)
+
+            if (usesEcbMode(ciphertext, 16)) {
+                cipher.lastModeUsedIsEcb
+            } else {
+                !cipher.lastModeUsedIsEcb
+            }
         }
 
-        return true
+        return wereValidPredictions.all { it }
     }
 }
