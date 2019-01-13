@@ -3,7 +3,6 @@ package ciphers.toyciphers
 import ciphers.AesEcbCipher
 import ciphers.Cipher
 import utilities.base64ToBytes
-import utilities.toAscii
 
 /**
  * A cipher that encrypts the plaintext with AES in ECB mode with an unknown fixed key after appending unknown fixed
