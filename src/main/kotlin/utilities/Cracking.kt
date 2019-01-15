@@ -1,6 +1,7 @@
 package utilities
 
 import ciphers.Cipher
+import ciphers.toyciphers.ECBUnknownKeyUnknownPrefixUnknownSuffixCipher
 import java.lang.IllegalStateException
 
 /**
@@ -48,6 +49,20 @@ fun determineBlockSize(cipher: Cipher): Int {
     }
 
     throw IllegalStateException("The block size could not be determined.")
+}
+
+/**
+ * Determine the size of the padding the cipher places before the plaintext.
+ */
+fun determinePrefixSize(cipher: Cipher): Int {
+    TODO("Implement this.")
+}
+
+fun main(args: Array<String>) {
+    val cipher = ECBUnknownKeyUnknownPrefixUnknownSuffixCipher()
+    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
+    val plaintext = cipher.decrypt(ciphertext)
+    println(plaintext.toAscii())
 }
 
 /**
