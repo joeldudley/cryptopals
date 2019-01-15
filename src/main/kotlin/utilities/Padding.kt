@@ -10,3 +10,12 @@ fun ByteArray.padToMultipleOf(length: Int): ByteArray {
         pad(paddingLength, 0.toByte())
     }
 }
+
+fun ByteArray.stripPadding() : ByteArray {
+    val paddingStartIndex = indexOf(0.toByte())
+    return if (paddingStartIndex == -1) {
+        this
+    } else {
+        sliceArray(0 until paddingStartIndex)
+    }
+}

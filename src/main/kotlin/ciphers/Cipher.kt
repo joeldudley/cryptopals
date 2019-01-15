@@ -1,7 +1,7 @@
 package ciphers
 
 interface Cipher {
-    val key: ByteArray
+    var key: ByteArray
     fun encrypt(plaintext: ByteArray): ByteArray
     fun decrypt(ciphertext: ByteArray): ByteArray
 }
@@ -12,5 +12,3 @@ interface Cipher {
 interface CipherWithIv : Cipher {
     val iv: ByteArray
 }
-
-// TODO: Write cipher-specific tests.

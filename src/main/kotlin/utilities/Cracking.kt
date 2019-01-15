@@ -35,7 +35,7 @@ fun findRepeatingKeyXorKeySize(ciphertext: ByteArray, maxKeySize: Int): Int {
  * Determine the block size used by a cipher.
  */
 // TODO: This approach does not work is the cipher uses random-size padding. Is that an issue?
-fun determineCipherBlockSize(cipher: Cipher): Int {
+fun determineBlockSize(cipher: Cipher): Int {
     val initialPlaintext = ByteArray(1) { 0.toByte() }
     val initalCiphertext = cipher.encrypt(initialPlaintext)
     val initialCiphertextLength = initalCiphertext.size

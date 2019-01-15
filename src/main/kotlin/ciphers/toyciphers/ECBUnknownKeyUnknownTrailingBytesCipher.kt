@@ -10,7 +10,8 @@ import utilities.base64ToBytes
  */
 
 class ECBUnknownKeyUnknownAppendedBytesCipher : Cipher {
-    override val key: ByteArray get() = throw IllegalStateException("The key of this cipher is fixed by unknown.")
+    override var key: ByteArray = ByteArray(0)
+        get() = throw IllegalStateException("The key of this cipher is fixed by unknown.")
     private val unknownKey = "FREEZE CONSTRUCT".toByteArray()
     private val unknownAppendedBytes = ("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmx" +
             "vdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdm" +

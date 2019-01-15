@@ -1,6 +1,7 @@
 package ciphers
 
 import utilities.padToMultipleOf
+import utilities.stripPadding
 import javax.crypto.spec.SecretKeySpec
 
 class AesEcbCipher : Cipher {
@@ -20,7 +21,7 @@ class AesEcbCipher : Cipher {
         val secretKeySpec = SecretKeySpec(key, "AES")
         val cipher = javax.crypto.Cipher.getInstance("AES/ECB/NoPadding")
         cipher.init(javax.crypto.Cipher.DECRYPT_MODE, secretKeySpec)
-        return cipher.doFinal(ciphertext)
+        return cipher.doFinal(ciphertext).stripPadding()
     }
 
 }

@@ -1,10 +1,7 @@
 package challenges
 
 import challenges.setone.*
-import challenges.settwo.ChallengeEleven
-import challenges.settwo.ChallengeNine
-import challenges.settwo.ChallengeTen
-import challenges.settwo.ChallengeTwelve
+import challenges.settwo.*
 
 fun main(args: Array<String>) {
     val challenges = listOf(
@@ -19,7 +16,8 @@ fun main(args: Array<String>) {
             ChallengeNine,
             ChallengeTen,
             ChallengeEleven,
-            ChallengeTwelve)
+            ChallengeTwelve,
+            ChallengeThirteen)
 
     challenges.forEach { challenge ->
         challenge.run()

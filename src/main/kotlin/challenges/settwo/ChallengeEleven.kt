@@ -39,7 +39,3 @@ object ChallengeEleven : Challenge(2, 11) {
         return true
     }
 }
-
-fun main(args: Array<String>) {
-    ChallengeEleven.run()
-}

@@ -10,7 +10,8 @@ import kotlin.random.Random
  * no decrypt mode.
  */
 class RandomModeRandomKeyRandomPaddingCipher : Cipher {
-    override val key get() = throw IllegalStateException("The key of this cipher is set randomly.")
+    override var key = ByteArray(0)
+        get() = throw IllegalStateException("The key of this cipher is set randomly.")
     // Used in Cryptopals challenge eleven to check our ECB or CBC oracle is working.
     var lastModeUsedIsEcb = false
     private val ecbCipher = AesEcbCipher()

@@ -1,6 +1,7 @@
 package ciphers
 
 import utilities.padToMultipleOf
+import utilities.stripPadding
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -22,7 +23,7 @@ class AesCbcCipher : CipherWithIv {
         val secretKeySpec = SecretKeySpec(key, "AES")
         val cipher = javax.crypto.Cipher.getInstance("AES/CBC/NoPadding")
         cipher.init(javax.crypto.Cipher.DECRYPT_MODE, secretKeySpec, IvParameterSpec(iv))
-        return cipher.doFinal(ciphertext)
+        return cipher.doFinal(ciphertext).stripPadding()
     }
 
 }
