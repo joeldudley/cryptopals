@@ -1,6 +1,10 @@
 package utilities
 
+import ciphers.AesEcbCipher
 import ciphers.Cipher
+import ciphers.toyciphers.ECBUnknownKeyAndPrefixAndSuffixCipher
+import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
+import kotlin.math.ceil
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -49,47 +53,14 @@ fun determineBlocksize(cipher: Cipher): Int {
 }
 
 /**
- * Encrypt the plaintext without the cipher's prefix (if it has one).
+ * Determine the size of an ECB cipher's prefix.
  */
-fun encryptWithoutPrefix(plaintext: ByteArray, cipher: Cipher): ByteArray {
+fun determinePrefixSizeEcb(cipher: Cipher): Int {
     val blocksize = determineBlocksize(cipher)
-    val prefixSize = determinePrefixSize(cipher)
-
-    // TODO: Update this to use prefix size.
-
-    // What's important here is that the block is made up of bytes that won't be confused with the padding (which we
-    // assumed is made up of null bytes).
-    val startOfHeadingBlock = ByteArray(blocksize) { 1.toByte() }
-    val ciphertextOfStartOfHeadingBlock = cipher.encrypt(startOfHeadingBlock)
-
-    var plaintextToAbsorbPrefix = ByteArray(0)
-    val bytesToDropToRemovePrefix: Int
-    while (true) {
-        val ciphertext = cipher.encrypt(plaintextToAbsorbPrefix)
-        val finalBlock = ciphertext.sliceArray(ciphertext.size - blocksize until ciphertext.size)
-
-        println(ciphertextOfStartOfHeadingBlock.size)
-
-        if (finalBlock.contentEquals(ciphertextOfStartOfHeadingBlock)) {
-            bytesToDropToRemovePrefix = ciphertext.size
-            break
-        }
-        plaintextToAbsorbPrefix += 0.toByte()
-    }
-
-    val ciphertextWithAbsorbebPrefix = cipher.encrypt(plaintext + plaintextToAbsorbPrefix)
-    return ciphertextWithAbsorbebPrefix.sliceArray(bytesToDropToRemovePrefix .. ciphertextWithAbsorbebPrefix.size)
-}
-
-/**
- * Determine the size of a cipher's prefix.
- */
-fun determinePrefixSize(cipher: Cipher): Int {
-    val blocksize = determineBlocksize(cipher)
-    val fullPrefixBlocks = determineFullPrefixBlocks(cipher)
+    val fullPrefixBlocks = determineFullPrefixBlocksEcb(cipher)
 
     // We can use any bytes that won't be identical to the padding byte.
-    val ciphertextOfStartOfHeadingBlock = determineCiphertextOfRepeatedBlock(cipher, 1.toByte())
+    val ciphertextOfStartOfHeadingBlock = determineCiphertextOfRepeatedBlockEcb(cipher, 1.toByte())
     var additionalPlaintextBytes = 0
     // We establish how many bytes have to be added to get the ciphertext block we are looking for. This indicates by
     // how many bytes the prefix falls short of another full block.
@@ -130,9 +101,9 @@ fun usesEcbMode(cipher: Cipher): Boolean {
 }
 
 /**
- * Determine the number of blocks a cipher's prefix completely occupies.
+ * Determine the number of blocks an ECB cipher's prefix completely occupies.
  */
-private fun determineFullPrefixBlocks(cipher: Cipher): Int {
+private fun determineFullPrefixBlocksEcb(cipher: Cipher): Int {
     val blocksize = determineBlocksize(cipher)
 
     // We create two ciphertexts from different plaintexts.
@@ -154,14 +125,14 @@ private fun determineFullPrefixBlocks(cipher: Cipher): Int {
 }
 
 /**
- * Despite a possible prefix, determine how a cipher would encrypt a block of a given byte repeating.
+ * Despite a possible prefix, determine how an ECB cipher would encrypt a block of a given byte repeating.
  */
-private fun determineCiphertextOfRepeatedBlock(cipher: Cipher, byte: Byte): ByteArray {
+private fun determineCiphertextOfRepeatedBlockEcb(cipher: Cipher, byte: Byte): ByteArray {
     val blocksize = determineBlocksize(cipher)
     val twoBlocksOfBytes = ByteArray(blocksize * 2) { byte }
     val ciphertext = cipher.encrypt(twoBlocksOfBytes)
 
-    val fullPrefixBlocks = determineFullPrefixBlocks(cipher)
+    val fullPrefixBlocks = determineFullPrefixBlocksEcb(cipher)
     // We know the full prefix blocks contain part of the prefix. The following block might also contain part of the
     // prefix. So we take the block after that.
     val bytesToDrop = (fullPrefixBlocks + 1) * blocksize
