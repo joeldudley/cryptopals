@@ -1,7 +1,7 @@
 package challenges.settwo
 
 import challenges.Challenge
-import ciphers.toyciphers.UnknownModeUnknownKeyUnknownPrefixUnknownSuffixCipher
+import ciphers.toyciphers.UnknownModeAndKeyAndPrefixAndSuffixCipher
 import utilities.usesEcbMode
 
 /*
@@ -28,7 +28,7 @@ block box that might be encrypting ECB or CBC, tells you which one is happening.
 */
 object ChallengeEleven : Challenge(2, 11) {
     override fun passes(): Boolean {
-        val cipher = UnknownModeUnknownKeyUnknownPrefixUnknownSuffixCipher()
+        val cipher = UnknownModeAndKeyAndPrefixAndSuffixCipher()
 
         repeat(10) {
             val predictedToUseEcb = usesEcbMode(cipher)

@@ -10,7 +10,7 @@ import kotlin.random.Random
  * bytes.
  */
 
-class ECBUnknownKeyUnknownSuffixCipher : Cipher {
+class ECBUnknownKeyAndSuffixCipher : Cipher {
     override var key = Random.nextBytes(16)
         get() = throw IllegalStateException("The key of this cipher is unknown.")
     private val unknownSuffix = ("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmx" +

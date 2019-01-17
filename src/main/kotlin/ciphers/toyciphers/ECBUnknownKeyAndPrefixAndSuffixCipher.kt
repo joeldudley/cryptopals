@@ -9,7 +9,7 @@ import kotlin.random.Random
  * A cipher that encrypts the plaintext with AES in ECB mode with an unknown key, an unknown prefix and an unknown
  * suffix.
  */
-class ECBUnknownKeyUnknownPrefixUnknownSuffixCipher : Cipher {
+class ECBUnknownKeyAndPrefixAndSuffixCipher : Cipher {
     override var key = Random.nextBytes(16)
         get() = throw IllegalStateException("The key of this cipher is unknown.")
     private val unknownPrefix: ByteArray

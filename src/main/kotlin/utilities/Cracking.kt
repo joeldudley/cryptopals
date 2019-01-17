@@ -1,7 +1,7 @@
 package utilities
 
 import ciphers.Cipher
-import ciphers.toyciphers.UnknownModeUnknownKeyUnknownPrefixUnknownSuffixCipher
+import ciphers.toyciphers.ECBUnknownKeyAndPrefixAndSuffixCipher
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -56,12 +56,12 @@ fun determinePrefixSize(cipher: Cipher): Int {
     TODO("Implement this.")
 }
 
-//fun main(args: Array<String>) {
-//    val cipher = ECBUnknownKeyUnknownPrefixUnknownSuffixCipher()
-//    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
-//    val plaintext = cipher.decrypt(ciphertext)
-//    println(plaintext.toAscii())
-//}
+fun main(args: Array<String>) {
+    val cipher = ECBUnknownKeyAndPrefixAndSuffixCipher()
+    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
+    val plaintext = cipher.decrypt(ciphertext)
+    println(plaintext.toAscii())
+}
 
 /**
  * Determine whether the [cipher] is operating in ECB or CBC mode.

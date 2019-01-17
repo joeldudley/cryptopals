@@ -2,7 +2,7 @@ package challenges.settwo
 
 import challenges.Challenge
 import ciphers.Cipher
-import ciphers.toyciphers.ECBUnknownKeyUnknownSuffixCipher
+import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
 import utilities.determineBlockSize
 import utilities.toAscii
 
@@ -60,7 +60,7 @@ object ChallengeTwelve : Challenge(2, 12) {
         val expectedSuffix = ("Rollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on stan" +
                 "dby waving just to say hi\nDid you stop? No, I just drove by\n").toByteArray()
 
-        val cipher = ECBUnknownKeyUnknownSuffixCipher()
+        val cipher = ECBUnknownKeyAndSuffixCipher()
         val suffix = retrieveUnknownSuffix(cipher)
 
         return suffix.contentEquals(expectedSuffix)
