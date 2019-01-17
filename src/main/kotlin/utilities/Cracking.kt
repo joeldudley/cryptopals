@@ -1,8 +1,6 @@
 package utilities
 
 import ciphers.Cipher
-import ciphers.toyciphers.ECBUnknownKeyAndPrefixAndSuffixCipher
-import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -55,6 +53,10 @@ fun determineBlocksize(cipher: Cipher): Int {
  */
 fun encryptWithoutPrefix(plaintext: ByteArray, cipher: Cipher): ByteArray {
     val blocksize = determineBlocksize(cipher)
+    val prefixSize = determinePrefixSize(cipher)
+
+    // TODO: Update this to use prefix size.
+
     // What's important here is that the block is made up of bytes that won't be confused with the padding (which we
     // assumed is made up of null bytes).
     val startOfHeadingBlock = ByteArray(blocksize) { 1.toByte() }
@@ -80,42 +82,38 @@ fun encryptWithoutPrefix(plaintext: ByteArray, cipher: Cipher): ByteArray {
 }
 
 /**
- * Determine the length of a cipher's prefix (if it has one) in terms of the number of blocks it completely occupies
- * (if the prefix is not a multiple of the blocksize, it will also consume n bytes of the next blocks where n <
- * blocksize).
+ * Determine the size of a cipher's prefix.
  */
-fun determineFullPrefixBlocks(cipher: Cipher): Int {
+fun determinePrefixSize(cipher: Cipher): Int {
     val blocksize = determineBlocksize(cipher)
+    val fullPrefixBlocks = determineFullPrefixBlocks(cipher)
 
-    val ciphertextOne = cipher.encrypt(ByteArray(0))
-    // We use the start-of-heading byte so that its ciphertext isn't identical to the padding's.
-    val ciphertextTwo = cipher.encrypt(ByteArray(1) { 1.toByte() })
-
-    val ciphertextOneBlocks = ciphertextOne.chunk(blocksize)
-    val ciphertextTwoBlocks = ciphertextTwo.chunk(blocksize)
-
-    var fullPrefixBlocks = 0
-    // The plaintexts are different, so any identical leading blocks must be completely made up of the prefix.
-    for ((chunkOne, chunkTwo) in ciphertextOneBlocks.zip(ciphertextTwoBlocks)) {
-        if (chunkOne.contentEquals(chunkTwo)) fullPrefixBlocks += 1
-        else break
+    // We can use any bytes that won't be identical to the padding byte.
+    val ciphertextOfStartOfHeadingBlock = determineCiphertextOfRepeatedBlock(cipher, 1.toByte())
+    var additionalPlaintextBytes = 0
+    // We establish how many bytes have to be added to get the ciphertext block we are looking for. This indicates by
+    // how many bytes the prefix falls short of another full block.
+    while (true) {
+        val plaintextSize = blocksize + additionalPlaintextBytes
+        val plaintext = ByteArray(plaintextSize) { 1.toByte() }
+        val ciphertext = cipher.encrypt(plaintext)
+        val ciphertextChunks = ciphertext.chunk(blocksize)
+        if (ciphertextChunks.any { chunk -> chunk.contentEquals(ciphertextOfStartOfHeadingBlock) })
+            break
+        additionalPlaintextBytes += 1
     }
 
-    return fullPrefixBlocks
-}
-
-fun main(args: Array<String>) {
-    repeat(10) {
-        val cipher = ECBUnknownKeyAndPrefixAndSuffixCipher()
-        println(determineFullPrefixBlocks(cipher))
-        println()
+    return if (additionalPlaintextBytes == 0) {
+        // If we had to add zero bytes, it means the prefix exactly occupied a number of full blocks.
+        fullPrefixBlocks * blocksize
+    } else {
+        (fullPrefixBlocks * blocksize) + (blocksize - additionalPlaintextBytes)
     }
 }
 
 /**
  * Determine whether the [cipher] is operating in ECB or CBC mode.
  */
-// TODO: Can we do this without providing the blocksize?
 fun usesEcbMode(cipher: Cipher): Boolean {
     val blocksize = determineBlocksize(cipher)
 
@@ -129,4 +127,43 @@ fun usesEcbMode(cipher: Cipher): Boolean {
     // We can detect ECB mode by the repeating blocks for the same plaintext.
     return (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
             && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3]))
+}
+
+/**
+ * Determine the number of blocks a cipher's prefix completely occupies.
+ */
+private fun determineFullPrefixBlocks(cipher: Cipher): Int {
+    val blocksize = determineBlocksize(cipher)
+
+    // We create two ciphertexts from different plaintexts.
+    val ciphertextOne = cipher.encrypt(ByteArray(0))
+    // We can use any bytes that won't be identical to the padding byte.
+    val ciphertextTwo = cipher.encrypt(ByteArray(1) { 1.toByte() })
+
+    val ciphertextOneBlocks = ciphertextOne.chunk(blocksize)
+    val ciphertextTwoBlocks = ciphertextTwo.chunk(blocksize)
+
+    var fullPrefixBlocks = 0
+    // Because the plaintexts are different, any identical leading blocks must be completely made up of the prefix.
+    for ((chunkOne, chunkTwo) in ciphertextOneBlocks.zip(ciphertextTwoBlocks)) {
+        if (chunkOne.contentEquals(chunkTwo)) fullPrefixBlocks += 1
+        else break
+    }
+
+    return fullPrefixBlocks
+}
+
+/**
+ * Despite a possible prefix, determine how a cipher would encrypt a block of a given byte repeating.
+ */
+private fun determineCiphertextOfRepeatedBlock(cipher: Cipher, byte: Byte): ByteArray {
+    val blocksize = determineBlocksize(cipher)
+    val twoBlocksOfBytes = ByteArray(blocksize * 2) { byte }
+    val ciphertext = cipher.encrypt(twoBlocksOfBytes)
+
+    val fullPrefixBlocks = determineFullPrefixBlocks(cipher)
+    // We know the full prefix blocks contain part of the prefix. The following block might also contain part of the
+    // prefix. So we take the block after that.
+    val bytesToDrop = (fullPrefixBlocks + 1) * blocksize
+    return ciphertext.sliceArray(bytesToDrop until bytesToDrop + blocksize)
 }
