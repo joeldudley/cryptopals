@@ -3,7 +3,7 @@ package challenges.settwo
 import challenges.Challenge
 import ciphers.AesEcbCipher
 import ciphers.Cipher
-import utilities.determineBlockSize
+import utilities.determineBlocksize
 import utilities.toAscii
 import kotlin.random.Random
 
@@ -85,7 +85,7 @@ fun parseKeyValuesIntoMap(keyValues: String): Map<String, String> {
 }
 
 fun generateAdminProfile(cipher: Cipher): ByteArray {
-    val blocksize = determineBlockSize(cipher)
+    val blocksize = determineBlocksize(cipher)
 
     // We need a username of a length that will place the role at the start of the final ciphertext block.
     var requiredUsernameLength = 0 - "email=".length - "&uid=99&role=".length

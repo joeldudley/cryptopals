@@ -2,6 +2,7 @@ package utilities
 
 import ciphers.Cipher
 import ciphers.toyciphers.ECBUnknownKeyAndPrefixAndSuffixCipher
+import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -34,7 +35,7 @@ fun findRepeatingKeyXorKeySize(ciphertext: ByteArray, maxKeySize: Int): Int {
 /**
  * Determine the block size used by a cipher.
  */
-fun determineBlockSize(cipher: Cipher): Int {
+fun determineBlocksize(cipher: Cipher): Int {
     val initialPlaintext = ByteArray(1) { 0.toByte() }
     val initalCiphertext = cipher.encrypt(initialPlaintext)
     val initialCiphertextLength = initalCiphertext.size
@@ -50,17 +51,65 @@ fun determineBlockSize(cipher: Cipher): Int {
 }
 
 /**
- * Determine the size of the padding the cipher places before the plaintext.
+ * Encrypt the plaintext without the cipher's prefix (if it has one).
  */
-fun determinePrefixSize(cipher: Cipher): Int {
-    TODO("Implement this.")
+fun encryptWithoutPrefix(plaintext: ByteArray, cipher: Cipher): ByteArray {
+    val blocksize = determineBlocksize(cipher)
+    // What's important here is that the block is made up of bytes that won't be confused with the padding (which we
+    // assumed is made up of null bytes).
+    val startOfHeadingBlock = ByteArray(blocksize) { 1.toByte() }
+    val ciphertextOfStartOfHeadingBlock = cipher.encrypt(startOfHeadingBlock)
+
+    var plaintextToAbsorbPrefix = ByteArray(0)
+    val bytesToDropToRemovePrefix: Int
+    while (true) {
+        val ciphertext = cipher.encrypt(plaintextToAbsorbPrefix)
+        val finalBlock = ciphertext.sliceArray(ciphertext.size - blocksize until ciphertext.size)
+
+        println(ciphertextOfStartOfHeadingBlock.size)
+
+        if (finalBlock.contentEquals(ciphertextOfStartOfHeadingBlock)) {
+            bytesToDropToRemovePrefix = ciphertext.size
+            break
+        }
+        plaintextToAbsorbPrefix += 0.toByte()
+    }
+
+    val ciphertextWithAbsorbebPrefix = cipher.encrypt(plaintext + plaintextToAbsorbPrefix)
+    return ciphertextWithAbsorbebPrefix.sliceArray(bytesToDropToRemovePrefix .. ciphertextWithAbsorbebPrefix.size)
+}
+
+/**
+ * Determine the length of a cipher's prefix (if it has one) in terms of the number of blocks it completely occupies
+ * (if the prefix is not a multiple of the blocksize, it will also consume n bytes of the next blocks where n <
+ * blocksize).
+ */
+fun determineFullPrefixBlocks(cipher: Cipher): Int {
+    val blocksize = determineBlocksize(cipher)
+
+    val ciphertextOne = cipher.encrypt(ByteArray(0))
+    // We use the start-of-heading byte so that its ciphertext isn't identical to the padding's.
+    val ciphertextTwo = cipher.encrypt(ByteArray(1) { 1.toByte() })
+
+    val ciphertextOneBlocks = ciphertextOne.chunk(blocksize)
+    val ciphertextTwoBlocks = ciphertextTwo.chunk(blocksize)
+
+    var fullPrefixBlocks = 0
+    // The plaintexts are different, so any identical leading blocks must be completely made up of the prefix.
+    for ((chunkOne, chunkTwo) in ciphertextOneBlocks.zip(ciphertextTwoBlocks)) {
+        if (chunkOne.contentEquals(chunkTwo)) fullPrefixBlocks += 1
+        else break
+    }
+
+    return fullPrefixBlocks
 }
 
 fun main(args: Array<String>) {
-    val cipher = ECBUnknownKeyAndPrefixAndSuffixCipher()
-    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
-    val plaintext = cipher.decrypt(ciphertext)
-    println(plaintext.toAscii())
+    repeat(10) {
+        val cipher = ECBUnknownKeyAndPrefixAndSuffixCipher()
+        println(determineFullPrefixBlocks(cipher))
+        println()
+    }
 }
 
 /**
@@ -68,7 +117,7 @@ fun main(args: Array<String>) {
  */
 // TODO: Can we do this without providing the blocksize?
 fun usesEcbMode(cipher: Cipher): Boolean {
-    val blocksize = determineBlockSize(cipher)
+    val blocksize = determineBlocksize(cipher)
 
     // Every plaintext block is the same, meaning that every ciphertext block will be the same too if we're using ECB
     // mode.

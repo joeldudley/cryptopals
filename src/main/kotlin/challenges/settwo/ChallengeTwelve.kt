@@ -3,7 +3,7 @@ package challenges.settwo
 import challenges.Challenge
 import ciphers.Cipher
 import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
-import utilities.determineBlockSize
+import utilities.determineBlocksize
 import utilities.toAscii
 
 /*
@@ -68,7 +68,7 @@ object ChallengeTwelve : Challenge(2, 12) {
 }
 
 fun retrieveUnknownSuffix(cipher: Cipher): ByteArray {
-    val blocksize = determineBlockSize(cipher)
+    val blocksize = determineBlocksize(cipher)
 
     var decipheredSuffix = ByteArray(0)
     val allBytes = (0..255).map { it.toByte() }

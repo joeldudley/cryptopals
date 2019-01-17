@@ -19,7 +19,8 @@ class ECBUnknownKeyAndPrefixAndSuffixCipher : Cipher {
     private val cipher = AesEcbCipher()
 
     init {
-        val unknownPrefixLength = Random.nextInt(0, 10)
+        val unknownPrefixLength = Random.nextInt(0, 100)
+        println(unknownPrefixLength / 16)
         unknownPrefix = Random.nextBytes(unknownPrefixLength)
     }
 
