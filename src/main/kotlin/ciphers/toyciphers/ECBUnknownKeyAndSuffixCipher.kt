@@ -11,7 +11,7 @@ import kotlin.random.Random
  */
 
 class ECBUnknownKeyAndSuffixCipher : Cipher {
-    override var key = "YELLOW SUBMARINE".toByteArray()
+    override var key = Random.nextBytes(16)
         get() = throw IllegalStateException("The key of this cipher is unknown.")
     private val unknownSuffix = ("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmx" +
             "vdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdm" +

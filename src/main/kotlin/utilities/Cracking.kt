@@ -1,10 +1,6 @@
 package utilities
 
-import ciphers.AesEcbCipher
 import ciphers.Cipher
-import ciphers.toyciphers.ECBUnknownKeyAndPrefixAndSuffixCipher
-import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
-import kotlin.math.ceil
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -50,6 +46,21 @@ fun determineBlocksize(cipher: Cipher): Int {
     }
 
     throw IllegalStateException("The block size could not be determined.")
+}
+
+/**
+ * Encrypt the plaintext without the cipher's prefix (if it has one).
+ */
+fun encryptWithoutPrefixEcb(plaintext: ByteArray, cipher: Cipher): ByteArray {
+    val blocksize = determineBlocksize(cipher)
+    val prefixSize = determinePrefixSizeEcb(cipher)
+
+    val bytesToDrop = roundUpToMultiple(prefixSize, blocksize)
+    val numberOfBytesToAbsorbPrefix = bytesToDrop - prefixSize
+    val bytesToAbsorbPrefix = ByteArray(numberOfBytesToAbsorbPrefix) { 0.toByte() }
+
+    val ciphertextWithPrefix = cipher.encrypt(bytesToAbsorbPrefix + plaintext)
+    return ciphertextWithPrefix.sliceArray(bytesToDrop until ciphertextWithPrefix.size)
 }
 
 /**

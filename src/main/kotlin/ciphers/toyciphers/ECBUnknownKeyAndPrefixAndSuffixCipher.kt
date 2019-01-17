@@ -10,7 +10,7 @@ import kotlin.random.Random
  * suffix.
  */
 class ECBUnknownKeyAndPrefixAndSuffixCipher : Cipher {
-    override var key = "YELLOW SUBMARINE".toByteArray()
+    override var key = Random.nextBytes(16)
         get() = throw IllegalStateException("The key of this cipher is unknown.")
     private val unknownPrefix: ByteArray
     private val unknownSuffix = ("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmx" +
@@ -20,7 +20,6 @@ class ECBUnknownKeyAndPrefixAndSuffixCipher : Cipher {
 
     init {
         val unknownPrefixLength = Random.nextInt(0, 100)
-        println(unknownPrefixLength)
         unknownPrefix = Random.nextBytes(unknownPrefixLength)
     }
 

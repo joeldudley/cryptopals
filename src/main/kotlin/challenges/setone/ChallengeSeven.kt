@@ -3,7 +3,6 @@ package challenges.setone
 import challenges.Challenge
 import ciphers.AesEcbCipher
 import utilities.base64ToBytes
-import utilities.toAscii
 import java.io.File
 
 /*

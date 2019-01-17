@@ -3,7 +3,6 @@ package ciphers.toyciphers
 import ciphers.AesCbcCipher
 import ciphers.AesEcbCipher
 import ciphers.Cipher
-import utilities.base64ToBytes
 import kotlin.random.Random
 
 /**
@@ -28,12 +27,12 @@ class UnknownModeAndKeyAndPrefixAndSuffixCipher : Cipher {
 
     override fun encrypt(plaintext: ByteArray): ByteArray {
         val useEcb = Random.nextBoolean()
-        if (useEcb) {
+        return if (useEcb) {
             lastModeUsedIsEcb = true
-            return ecbCipher.encrypt(unknownPrefix + plaintext + unknownSuffix)
+            ecbCipher.encrypt(unknownPrefix + plaintext + unknownSuffix)
         } else {
             lastModeUsedIsEcb = false
-            return cbcCipher.encrypt(unknownPrefix + plaintext + unknownSuffix)
+            cbcCipher.encrypt(unknownPrefix + plaintext + unknownSuffix)
         }
     }
 
