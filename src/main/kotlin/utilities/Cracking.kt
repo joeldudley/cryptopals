@@ -1,8 +1,7 @@
 package utilities
 
 import ciphers.Cipher
-import ciphers.toyciphers.ECBUnknownKeyUnknownPrefixUnknownSuffixCipher
-import java.lang.IllegalStateException
+import ciphers.toyciphers.UnknownModeUnknownKeyUnknownPrefixUnknownSuffixCipher
 
 /**
  * Find the likeliest key size between 2 and [maxKeySize] that was used to encrypt [ciphertext] using repeating-key XOR. The
@@ -35,13 +34,12 @@ fun findRepeatingKeyXorKeySize(ciphertext: ByteArray, maxKeySize: Int): Int {
 /**
  * Determine the block size used by a cipher.
  */
-// TODO: This approach does not work is the cipher uses random-size padding. Is that an issue?
 fun determineBlockSize(cipher: Cipher): Int {
     val initialPlaintext = ByteArray(1) { 0.toByte() }
     val initalCiphertext = cipher.encrypt(initialPlaintext)
     val initialCiphertextLength = initalCiphertext.size
 
-    for (i in 1..Int.MAX_VALUE) {
+    for (i in 2..Int.MAX_VALUE) {
         val plaintext = ByteArray(i) { 0.toByte() }
         val ciphertext = cipher.encrypt(plaintext)
         // If the ciphertext size jumps, we know that the size of the jump is the size of a single block.
@@ -58,23 +56,25 @@ fun determinePrefixSize(cipher: Cipher): Int {
     TODO("Implement this.")
 }
 
-fun main(args: Array<String>) {
-    val cipher = ECBUnknownKeyUnknownPrefixUnknownSuffixCipher()
-    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
-    val plaintext = cipher.decrypt(ciphertext)
-    println(plaintext.toAscii())
-}
+//fun main(args: Array<String>) {
+//    val cipher = ECBUnknownKeyUnknownPrefixUnknownSuffixCipher()
+//    val ciphertext = cipher.encrypt("abcjoeldudley".toByteArray())
+//    val plaintext = cipher.decrypt(ciphertext)
+//    println(plaintext.toAscii())
+//}
 
 /**
  * Determine whether the [cipher] is operating in ECB or CBC mode.
  */
 // TODO: Can we do this without providing the blocksize?
-fun usesEcbMode(cipher: Cipher, blockSize: Int): Boolean {
+fun usesEcbMode(cipher: Cipher): Boolean {
+    val blocksize = determineBlockSize(cipher)
+
     // Every plaintext block is the same, meaning that every ciphertext block will be the same too if we're using ECB
     // mode.
     val plaintext = ByteArray(320) { 0.toByte() }
     val ciphertext = cipher.encrypt(plaintext)
-    val ciphertextBlocks = ciphertext.chunk(blockSize)
+    val ciphertextBlocks = ciphertext.chunk(blocksize)
 
     // We skip over the block potentially containing the IV.
     // We can detect ECB mode by the repeating blocks for the same plaintext.
