@@ -51,9 +51,8 @@ fun determineBlocksize(cipher: Cipher): Int {
 /**
  * Encrypt the plaintext without the cipher's prefix (if it has one).
  */
-fun encryptWithoutPrefixEcb(plaintext: ByteArray, cipher: Cipher): ByteArray {
+fun encryptWithoutPrefixEcb(plaintext: ByteArray, cipher: Cipher, prefixSize: Int): ByteArray {
     val blocksize = determineBlocksize(cipher)
-    val prefixSize = determinePrefixSizeEcb(cipher)
 
     val bytesToDrop = roundUpToMultiple(prefixSize, blocksize)
     val numberOfBytesToAbsorbPrefix = bytesToDrop - prefixSize
@@ -71,7 +70,7 @@ fun determinePrefixSizeEcb(cipher: Cipher): Int {
     val fullPrefixBlocks = determineFullPrefixBlocksEcb(cipher)
 
     // We can use any bytes that won't be identical to the padding byte.
-    val ciphertextOfStartOfHeadingBlock = determineCiphertextOfRepeatedBlockEcb(cipher, 1.toByte())
+    val ciphertextOfStartOfHeadingBlock = determineCiphertextOfBlockOfRepeatedByteEcb(cipher, 1.toByte())
     var additionalPlaintextBytes = 0
     // We establish how many bytes have to be added to get the ciphertext block we are looking for. This indicates by
     // how many bytes the prefix falls short of another full block.
@@ -91,24 +90,6 @@ fun determinePrefixSizeEcb(cipher: Cipher): Int {
     } else {
         (fullPrefixBlocks * blocksize) + (blocksize - additionalPlaintextBytes)
     }
-}
-
-/**
- * Determine whether the [cipher] is operating in ECB or CBC mode.
- */
-fun usesEcbMode(cipher: Cipher): Boolean {
-    val blocksize = determineBlocksize(cipher)
-
-    // Every plaintext block is the same, meaning that every ciphertext block will be the same too if we're using ECB
-    // mode.
-    val plaintext = ByteArray(320) { 0.toByte() }
-    val ciphertext = cipher.encrypt(plaintext)
-    val ciphertextBlocks = ciphertext.chunk(blocksize)
-
-    // We skip over the block potentially containing the IV.
-    // We can detect ECB mode by the repeating blocks for the same plaintext.
-    return (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
-            && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3]))
 }
 
 /**
@@ -136,9 +117,27 @@ private fun determineFullPrefixBlocksEcb(cipher: Cipher): Int {
 }
 
 /**
+ * Determine whether the [cipher] is operating in ECB or CBC mode.
+ */
+fun usesEcbMode(cipher: Cipher): Boolean {
+    val blocksize = determineBlocksize(cipher)
+
+    // Every plaintext block is the same, meaning that every ciphertext block will be the same too if we're using ECB
+    // mode.
+    val plaintext = ByteArray(320) { 0.toByte() }
+    val ciphertext = cipher.encrypt(plaintext)
+    val ciphertextBlocks = ciphertext.chunk(blocksize)
+
+    // We skip over the block potentially containing the IV.
+    // We can detect ECB mode by the repeating blocks for the same plaintext.
+    return (ciphertextBlocks[1].contentEquals(ciphertextBlocks[2])
+            && ciphertextBlocks[2].contentEquals(ciphertextBlocks[3]))
+}
+
+/**
  * Despite a possible prefix, determine how an ECB cipher would encrypt a block of a given byte repeating.
  */
-private fun determineCiphertextOfRepeatedBlockEcb(cipher: Cipher, byte: Byte): ByteArray {
+private fun determineCiphertextOfBlockOfRepeatedByteEcb(cipher: Cipher, byte: Byte): ByteArray {
     val blocksize = determineBlocksize(cipher)
     val twoBlocksOfBytes = ByteArray(blocksize * 2) { byte }
     val ciphertext = cipher.encrypt(twoBlocksOfBytes)
@@ -148,4 +147,43 @@ private fun determineCiphertextOfRepeatedBlockEcb(cipher: Cipher, byte: Byte): B
     // prefix. So we take the block after that.
     val bytesToDrop = (fullPrefixBlocks + 1) * blocksize
     return ciphertext.sliceArray(bytesToDrop until bytesToDrop + blocksize)
+}
+
+// TODO: Document this.
+fun retrieveUnknownSuffixEcb(cipher: Cipher): ByteArray {
+    val blocksize = determineBlocksize(cipher)
+    val prefixSize = determinePrefixSizeEcb(cipher)
+
+    var decipheredSuffix = ByteArray(0)
+    val allBytes = (0..255).map { it.toByte() }
+
+    var suffixByteIndex = 0
+    while (true) {
+        val plaintextBlocksToGenerate = suffixByteIndex / blocksize + 1
+        val plaintextBytesToGenerate = plaintextBlocksToGenerate * blocksize
+        val nullBytesToGenerate = plaintextBytesToGenerate - decipheredSuffix.size - 1
+        val nullBytes = ByteArray(nullBytesToGenerate) { 0.toByte() }
+        val nullBytesAndDecipheredBytes = nullBytes + decipheredSuffix
+
+        val ciphertextOfShortInput = encryptWithoutPrefixEcb(nullBytes, cipher, prefixSize)
+        // If the resulting ciphertext is shorter than expected, this indicates that the suffix has finished.
+        if (ciphertextOfShortInput.size < plaintextBytesToGenerate) break
+        val relevantCiphertextOfShortInput = ciphertextOfShortInput.sliceArray(0 until plaintextBytesToGenerate)
+
+        val ciphertextOfEachAdditionalByteMap = allBytes.map { byte ->
+            val plaintext = nullBytesAndDecipheredBytes + byte
+            val ciphertext = encryptWithoutPrefixEcb(plaintext, cipher, prefixSize)
+            val relevantCiphertextBytes = ciphertext.sliceArray(0 until plaintextBytesToGenerate)
+            relevantCiphertextBytes.toAscii() to byte
+        }.toMap()
+
+        val decipheredByte = ciphertextOfEachAdditionalByteMap[relevantCiphertextOfShortInput.toAscii()]
+        // Indicates we've hit the padding.
+        if (decipheredByte == 0.toByte()) break
+
+        decipheredSuffix += decipheredByte!!
+        suffixByteIndex++
+    }
+
+    return decipheredSuffix
 }

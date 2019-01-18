@@ -1,10 +1,8 @@
 package challenges.settwo
 
 import challenges.Challenge
-import ciphers.Cipher
 import ciphers.toyciphers.ECBUnknownKeyAndSuffixCipher
-import utilities.determineBlocksize
-import utilities.toAscii
+import utilities.retrieveUnknownSuffixEcb
 
 /*
 Copy your oracle function to a new function that encrypts buffers under ECB mode using a consistent but unknown key
@@ -61,45 +59,8 @@ object ChallengeTwelve : Challenge(2, 12) {
                 "dby waving just to say hi\nDid you stop? No, I just drove by\n").toByteArray()
 
         val cipher = ECBUnknownKeyAndSuffixCipher()
-        val suffix = retrieveUnknownSuffix(cipher)
+        val suffix = retrieveUnknownSuffixEcb(cipher)
 
         return suffix.contentEquals(expectedSuffix)
     }
-}
-
-fun retrieveUnknownSuffix(cipher: Cipher): ByteArray {
-    val blocksize = determineBlocksize(cipher)
-
-    var decipheredSuffix = ByteArray(0)
-    val allBytes = (0..255).map { it.toByte() }
-
-    var suffixByteIndex = 0
-    while (true) {
-        val plaintextBlocksToGenerate = suffixByteIndex / blocksize + 1
-        val plaintextBytesToGenerate = plaintextBlocksToGenerate * blocksize
-        val nullBytesToGenerate = plaintextBytesToGenerate - decipheredSuffix.size - 1
-        val nullBytes = ByteArray(nullBytesToGenerate) { 0.toByte() }
-        val nullBytesAndDecipheredBytes = nullBytes + decipheredSuffix
-
-        val ciphertextOfShortInput = cipher.encrypt(nullBytes)
-        // If the resulting ciphertext is shorter than expected, this indicates that the suffix has finished.
-        if (ciphertextOfShortInput.size < plaintextBytesToGenerate) break
-        val relevantCiphertextOfShortInput = ciphertextOfShortInput.sliceArray(0 until plaintextBytesToGenerate)
-
-        val ciphertextOfEachAdditionalByteMap = allBytes.map { byte ->
-            val plaintext = nullBytesAndDecipheredBytes + byte
-            val ciphertext = cipher.encrypt(plaintext)
-            val relevantCiphertextBytes = ciphertext.sliceArray(0 until plaintextBytesToGenerate)
-            relevantCiphertextBytes.toAscii() to byte
-        }.toMap()
-
-        val decipheredByte = ciphertextOfEachAdditionalByteMap[relevantCiphertextOfShortInput.toAscii()]
-        // Indicates we've hit the padding.
-        if (decipheredByte == 0.toByte()) break
-
-        decipheredSuffix += decipheredByte!!
-        suffixByteIndex++
-    }
-
-    return decipheredSuffix
 }

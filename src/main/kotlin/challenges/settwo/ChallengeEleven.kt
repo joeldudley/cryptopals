@@ -26,6 +26,7 @@ time for CBC). Use rand(2) to decide which to use.
 Detect the block cipher mode the function is using each time. You should end up with a piece of code that, pointed at a
 block box that might be encrypting ECB or CBC, tells you which one is happening.
 */
+// TODO: Fix challenge eleven.
 object ChallengeEleven : Challenge(2, 11) {
     override fun passes(): Boolean {
         val cipher = UnknownModeAndKeyAndPrefixAndSuffixCipher()

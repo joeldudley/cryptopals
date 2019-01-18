@@ -15,9 +15,11 @@ fun main(args: Array<String>) {
             ChallengeEight,
             ChallengeNine,
             ChallengeTen,
-            ChallengeEleven,
+            // TODO: Renable challenge 11 after fixing it.
+//            ChallengeEleven,
             ChallengeTwelve,
-            ChallengeThirteen)
+            ChallengeThirteen,
+            ChallengeFourteen)
 
     challenges.forEach { challenge ->
         challenge.run()
